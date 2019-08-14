@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Punchhole Cards</title>
+		<style type="text/css">
+			* {
+				margin: 0;
+				padding: 0;
+			}
+
+			body {
+				margin: 50px;
+				font-family: "Roboto", sans-serif;
+			}
+
+			img {
+				image-rendering: pixelated;
+				transform-origin: 0 0;
+				transform: scale(2);
+				margin-top: 8px;
+				margin-bottom: 16px;
+			}
+
+			pre {
+				background: #000;
+				color: #fff;
+				display: inline-block;
+				padding: 2px 6px;
+				border-radius: 4px;
+			}
+		</style>
+	</head> 
+	<body>
+		<h1>Punchhole Cards</h1>
+		<br>
+		<h2>Read</h2>
+		<br>
+		<p>CTRL+V or</p>
+		<input id="read-file" type="file" accept="image/*"/><br>
+		<!-- <button id="read-clipboard">Or paste from clipboard</button><br> -->
+		<img id="read-preview"/><br>
+		<pre id="read-output"></pre>
+		<br>
+		<h2>Write</h2>
+		<br>
+		<form id="write-form" onsubmit="return false">
+			<input type="text" autocomplete="no"/> <input type="submit" value="Generate"/><br>
+		</form>
+		<img id="write-output"/>
+		<script type="text/javascript">
+			// https://upload.wikimedia.org/wikipedia/commons/4/4c/Blue-punch-card-front-horiz.png
+			//  0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ#,$.-@%*<-/+_)¢|&>:;¬'?"=!(,.
+			var punches = {
+				// 0123456789
+				"            ": ' ',
+				"  #         ": '0',
+				"   #        ": '1',
+				"    #       ": '2',
+				"     #      ": '3',
+				"      #     ": '4',
+				"       #    ": '5',
+				"        #   ": '6',
+				"         #  ": '7',
+				"          # ": '8',
+				"           #": '9',
+				// 0123456789
+				"#  #        ": 'A',
+				"#   #       ": 'B',
+				"#    #      ": 'C',
+				"#     #     ": 'D',
+				"#      #    ": 'E',
+				"#       #   ": 'F',
+				"#        #  ": 'G',
+				"#         # ": 'H',
+				"#          #": 'I',
+				// 0123456789
+				" # #        ": 'J',
+				" #  #       ": 'K',
+				" #   #      ": 'L',
+				" #    #     ": 'M',
+				" #     #    ": 'N',
+				" #      #   ": 'O',
+				" #       #  ": 'P',
+				" #        # ": 'Q',
+				" #         #": 'R',
+				// 0123456789
+				"  # #       ": 'S',
+				"  #  #      ": 'T',
+				"  #   #     ": 'U',
+				"  #    #    ": 'V',
+				"  #     #   ": 'W',
+				"  #      #  ": 'X',
+				"  #       # ": 'Y',
+				"  #        #": 'Z',
+				// fortran
+				// 0123456789
+				"  ##        ": '/',
+				"  #  #    # ": ',',
+				"#      #  # ": '(',
+				" #     #  # ": ')',
+				"        # # ": '=',
+				"#       # # ": '+',
+				" #          ": '-',
+				
+				"#    #    # ": '.',
+				/*
+				// 0123456789
+				"     #    # ": '#',
+				"  #  #    # ": ',',
+				" #   #    # ": '$',
+				"#    #    # ": '.',
+				" #          ": '-',
+				"      #   # ": '@',
+				"  #   #   # ": '%',
+				" #    #   # ": '*',
+				"#     #   # ": '<',
+				// 0123456789
+				" #          ": '-', // double
+				"  ##        ": '/',
+				"#       # # ": '+',
+				"  #    #  # ": '_',
+				" #     #  # ": ')',
+				"#   #     # ": '¢',
+				"#        ## ": '|',
+				"#           ": '&',
+				"  #     # # ": '>',
+				// 0123456789
+				"    #     # ": ':',
+				" #      # # ": ';',
+				" #       ## ": '¬',
+				"       #  # ": '\'',
+				"  #      ## ": '?',
+				"         ## ": '"',
+				"        # # ": '=',
+				" #  #     # ": '!',
+				"  #  #    # ": ',', // double
+				"#    #    # ": '.', // double
+				*/
+			};
+
+			var punchesChars = (obj=>{
+				var out = {};
+				for(var key in obj){
+					out[obj[key]] = key;
+				}
+				return out;
+			})(punches);
+			
+			var test;
+			
+			var read = image=>new Promise(async (resolve,reject)=>{
+				var canvas = document.createElement("canvas");
+				canvas.width = image.width;
+				canvas.height = image.height;
+
+				var ctx = canvas.getContext("2d");
+				ctx.drawImage(image, 0, 0);
+
+				var img = ctx.getImageData(0,0,canvas.width,canvas.height);
+				var out = "";
+
+				//if (img.height != 12)
+				//	return reject("Incorrect dimensions");
+
+				function getPunched(x, y) {
+					return (img.data[
+						(y*img.width+x)*4
+					]>128);
+				}
+
+				for (let x=0; x<img.width; x++) {
+					let char = "";
+					for (let y=0; y<12; y++) {
+						if (getPunched(x,y)) {
+							char += "#";
+						} else {
+							char += " ";
+						}
+					}
+
+					let resChar = punches[char];
+					if (resChar == undefined) {
+						out += " ";
+						console.log(char)
+					} else {
+						out += resChar;
+					}
+				}
+
+				return resolve(out);
+			});
+
+			var write = text=>new Promise(async (resolve,reject)=>{
+				var canvas = document.createElement("canvas");
+				canvas.width = text.length;
+				canvas.height = 12;
+
+				var ctx = canvas.getContext("2d");
+				test = img;
+
+				var img = new ImageData(canvas.width, canvas.height);
+				for (let i=0; i<img.data.length; i++) {
+					img.data[i] = (i%4==3)?255:0;
+				}
+
+				function putPunch(x, y) {
+					let i = (y*img.width+x)*4;
+					img.data[i  ] = 255;
+					img.data[i+1] = 255;
+					img.data[i+2] = 255;
+					img.data[i+3] = 255;
+				}
+
+				text = text.toUpperCase().replace(/[^A-Z0-9#,$\.\-@%*</+_)¢|&>:;¬'?"=!( ]/gi, "");
+
+				Array.from(text).forEach((char,x)=>{
+					char = punchesChars[char];
+					if (char == undefined) return;
+
+					Array.from(char).forEach((punch,y)=>{
+						if (punch == "#") putPunch(x, y);
+					});
+				});
+
+				ctx.putImageData(img, 0, 0);
+				return resolve(canvas.toDataURL());
+			});
+
+			function readFile(file) {
+				var reader = new FileReader();
+				reader.onload = e=>{
+					var img = document.getElementById("read-preview");
+					img.src = e.target.result;
+
+					(function(){
+						if (img.complete) {
+							read(img).then(text=>{
+								document.getElementById("read-output").textContent = text;
+							});
+						} else {
+							setTimeout(arguments.callee, 50);
+						}
+					})();
+				};
+				reader.readAsDataURL(file);
+			}
+
+			document.getElementById("read-file").addEventListener("change", e=>{
+				if (!e.target.files) return;
+				if (!e.target.files[0]) return;
+				readFile(e.target.files[0]);
+			});
+
+			// document.getElementById("read-clipboard").addEventListener("click", e=>{
+			// 	document.execCommand("paste");
+			// });
+
+			document.onpaste = (e=>{
+				let items = (event.clipboardData||event.originalEvent.clipboardData).items;
+				for (i in items) {
+					var item = items[i];
+					if (item.kind === "file") {
+						readFile(item.getAsFile());
+						return;
+					}
+				}
+			});
+
+			document.getElementById("write-form").addEventListener("submit", e=>{
+				let text = e.target.querySelector("input[type=text]").value;
+				if (text.length<=0) return;
+
+				write(text).then(dataUrl=>{
+					document.getElementById("write-output").src = dataUrl;
+				});
+			});
+		</script>
+	</body>
+</html>

@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "bruteforcer": "^1.0.1",
+    "dcipher": "^1.1.2",
+    "jimp": "^0.6.4",
+    "request": "^2.88.0",
+    "request-promise-native": "^1.0.7"
+  }
+}
