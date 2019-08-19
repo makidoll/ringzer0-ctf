@@ -1,9 +1,12 @@
 {
   "dependencies": {
+    "@mattflow/sudoku-solver": "^2.2.0",
     "bruteforcer": "^1.0.1",
     "dcipher": "^1.1.2",
     "jimp": "^0.6.4",
+    "mitt": "^1.1.3",
     "request": "^2.88.0",
-    "request-promise-native": "^1.0.7"
+    "request-promise-native": "^1.0.7",
+    "ssh2": "^0.8.5"
   }
 }
