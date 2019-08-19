@@ -1,5 +1,4 @@
 const request = require("request-promise-native");
-const { exec } = require("child_process");
 const fs = require("fs");
 const config = require("../config.js");
 const Jimp = require("jimp");
